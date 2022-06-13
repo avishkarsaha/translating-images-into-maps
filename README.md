@@ -43,7 +43,7 @@ the mini dataset, the input images and intrinsics.
 ### Using the code:
 To train a model with the configuration in the paper, simply run:
 ```bash
-./train.sh  
+./train.py  
 ```
 
 ### Citation
