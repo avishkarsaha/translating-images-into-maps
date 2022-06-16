@@ -47,13 +47,21 @@ python train.py
 ```
 
 ### Citation
-You can cite our paper using: 
+If you find this code useful, please cite the following papers:
 ```
-@article{Saha2021Arxiv,
+@inproceedings{saha2022translating,
   title={Translating Images into Maps},
-  author={Saha, Avishkar and <b>Mendez, Oscar </b> and Russell, Chris and Bowden, Richard},
-  journal={arXiv preprint arXiv:2110.00966},
+  author={Saha, Avishkar and Mendez, Oscar and Russell, Chris and Bowden, Richard},
+  booktitle={2022 IEEE International Conference on Robotics and Automation (ICRA)},
+  year={2022},
+  organization={IEEE}
+}
+@inproceedings{saha2021enabling,
+  title={Enabling spatio-temporal aggregation in birds-eye-view vehicle estimation},
+  author={Saha, Avishkar and Mendez, Oscar and Russell, Chris and Bowden, Richard},
+  booktitle={2021 IEEE International Conference on Robotics and Automation (ICRA)},
+  pages={5133--5139},
   year={2021},
-  url= {https://arxiv.org/pdf/2110.00966.pdf}
+  organization={IEEE}
 }
 ```
