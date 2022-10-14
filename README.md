@@ -46,6 +46,13 @@ To train a model with the configuration in the paper, simply run:
 python train.py  
 ```
 
+### Pretrained model
+Pretrained models and their configs required to load/train them can be downloaded from here:
+````
+https://drive.google.com/drive/folders/13-WobzEg9MGcT-tceXE3kwgEv8Q-kUwU?usp=sharing
+````
+
+
 ### Citation
 If you find this code useful, please cite the following papers:
 ```
