@@ -49,7 +49,7 @@ python train.py
 ### Pretrained model
 Pretrained models and their configs required to load/train them can be downloaded from here:
 ````
-https://drive.google.com/drive/folders/13-WobzEg9MGcT-tceXE3kwgEv8Q-kUwU?usp=sharing
+https://www.icloud.com/iclouddrive/0aaSjW59DEqgUDKyy1uw0iSVg#nuscenes%5Fdata
 ````
 
 
