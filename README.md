@@ -27,7 +27,7 @@ The official nuScenes data will be required to train the entire model.
 But for convenience, we provide the nuScenes mini dataset wrapped into 
 lmdb's:
 ```
-https://drive.google.com/drive/folders/1-1dZXeHnPiuqX-w8ruJHqfxBuMYMONRT?usp=sharing
+https://www.icloud.com/iclouddrive/0aaSjW59DEqgUDKyy1uw0iSVg#nuscenes%5Fdata
 ```
 
 The contents of this folder need to be unzipped and placed in a folder, create the folder
