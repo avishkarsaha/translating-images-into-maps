@@ -73,4 +73,11 @@ If you find this code useful, please cite the following papers:
   year={2021},
   organization={IEEE}
 }
+@inproceedings{saha2022pedestrian,
+  title={" The Pedestrian next to the Lamppost" Adaptive Object Graphs for Better Instantaneous Mapping},
+  author={Saha, Avishkar and Mendez, Oscar and Russell, Chris and Bowden, Richard},
+  booktitle={Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition},
+  pages={19528--19537},
+  year={2022}
+}
 ```
