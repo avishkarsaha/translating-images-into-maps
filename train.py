@@ -26,12 +26,15 @@ from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 from torchvision.transforms import ToPILImage
 import torch.nn.functional as F
+from yacs.config import CfgNode
 
 import src
 import src.data.collate_funcs
+from src import utils
 from src.utils import MetricDict
 from src.data.dataloader import nuScenesMaps
 import src.model.network as networks
+from src.data.dataloader_new import build_dataloaders
 
 mpl.rcParams["font.family"] = "serif"
 cmfont = font_manager.FontProperties(fname=mpl.get_data_path() + "/fonts/ttf/cmr10.ttf")
@@ -50,8 +53,12 @@ def train(args, dataloader, model, optimizer, epoch):
     t = time.time()
     num_classes = len(args.pred_classes_nusc)
 
-    for i, ((image, calib, grid2d), (cls_map, vis_mask)) in enumerate(dataloader):
+    for i, (image, calib, cls_map, vis_mask) in enumerate(dataloader):
 
+        grid2d = utils.make_grid2d(args.grid_size, (-args.grid_size[0] / 2.0, 0.0), args.grid_res)
+        batch_size = len(calib)
+        grid2d = grid2d.repeat((batch_size,)+(1,)*len(grid2d.shape))
+        vis_mask = vis_mask.repeat((batch_size,)+(1,)*len(vis_mask.shape))
         # Move tensors to GPU
         image, calib, cls_map, vis_mask, grid2d = (
             image.cuda(),
@@ -176,7 +183,13 @@ def validate(args, dataloader, model, epoch):
     num_classes = len(args.pred_classes_nusc)
     times = []
 
-    for i, ((image, calib, grid2d), (cls_map, vis_mask)) in enumerate(dataloader):
+    grid2d = utils.make_grid2d(args.grid_size, (-args.grid_size[0] / 2.0, 0.0), args.grid_res)
+
+    for i, (image, calib, cls_map, vis_mask) in enumerate(dataloader):
+        batch_size = len(calib)
+        grid2d = grid2d.repeat((batch_size,)+(1,)*len(grid2d.shape))
+        vis_mask = vis_mask.repeat((batch_size,)+(1,)*len(vis_mask.shape))
+
         # Move tensors to GPU
         image, calib, cls_map, vis_mask, grid2d = (
             image.cuda(),
@@ -221,7 +234,7 @@ def validate(args, dataloader, model, epoch):
             epoch_iou += iou_dict
             epoch_loss_per_class += per_class_loss_dict
 
-            # Visualize predictions
+            # # Visualize predictions
             # if epoch % args.val_interval * 4 == 0 and i % 50 == 0:
             #     vis_img = ToPILImage()(image[0].detach().cpu())
             #     pred_vis = pred_ms[1].detach().cpu()
@@ -376,6 +389,7 @@ def visualize_score(scores, heatmaps, grid, image, iou, num_classes):
 
 
 def parse_args():
+    import time
     parser = ArgumentParser()
 
     # ----------------------------- Data options ---------------------------- #
@@ -667,7 +681,7 @@ def parse_args():
     # ------------------------ Experiment options ----------------------- #
     parser.add_argument(
         "--name", type=str,
-        default="tiim_220613",
+        default=str(time.time()),
         help="name of experiment",
     )
     parser.add_argument(
@@ -713,8 +727,23 @@ def parse_args():
         default=20,
         help="display visualizations every N iterations",
     )
-    return parser.parse_args()
+    args = parser.parse_args()
 
+    # This is a patch to use "mono-semantic-maps" dataloader instead of lmdb's.
+    # The directories content follows "mono-semantic-maps"'s requirements
+    args.dataloader_config = {
+        'label_root': "/home/shai/DataSets/nuscenes/map-labels-v1.0",
+        'dataroot': "/home/shai/DataSets/nuscenes",
+        'nuscenes_version': args.nusc_version,
+        'img_size':  args.desired_image_size,
+        'hold_out_calibration': False,
+        'hflip': True,
+        'epoch_size': None,
+        'batch_size': args.batch_size,
+        'num_workers': args.workers,
+    }
+
+    return args
 
 def str2bool(v):
     if isinstance(v, bool):
@@ -799,49 +828,8 @@ def main():
     ### Create experiment ###
     summary = _make_experiment(args)
 
-    print("loading train data")
-    # Create datasets
-    train_data = nuScenesMaps(
-        root=args.root,
-        split=args.train_split,
-        grid_size=args.grid_size,
-        grid_res=args.grid_res,
-        classes=args.load_classes_nusc,
-        dataset_size=args.data_size,
-        desired_image_size=args.desired_image_size,
-        mini=True,
-        gt_out_size=(100, 100),
-    )
-    print("loading val data")
-    val_data = nuScenesMaps(
-        root=args.root,
-        split=args.val_split,
-        grid_size=args.grid_size,
-        grid_res=args.grid_res,
-        classes=args.load_classes_nusc,
-        dataset_size=args.data_size,
-        desired_image_size=args.desired_image_size,
-        mini=True,
-        gt_out_size=(200, 200),
-    )
-
-    # Create dataloaders
-    train_loader = DataLoader(
-        train_data,
-        batch_size=args.batch_size,
-        shuffle=True,
-        num_workers=1,
-        collate_fn=src.data.collate_funcs.collate_nusc_s,
-        drop_last=True,
-    )
-    val_loader = DataLoader(
-        val_data,
-        batch_size=args.batch_size,
-        shuffle=False,
-        num_workers=1,
-        collate_fn=src.data.collate_funcs.collate_nusc_s,
-        drop_last=True,
-    )
+    print("loading train data - This paer replaces the original dataloader (lmdb)")
+    train_loader, val_loader = build_dataloaders('nuscenes', CfgNode(args.dataloader_config))
 
     # Build model
     model = networks.__dict__[args.model_name](
@@ -934,7 +922,7 @@ def main():
         # Run validation every N epochs
         if epoch % args.val_interval == 0:
             # Save model checkpoint
-            # save_checkpoint(args, epoch, model, optimizer, scheduler)
+            save_checkpoint(args, epoch, model, optimizer, scheduler)
             validate(args, val_loader, model, epoch)
 
         # Update and log learning rate
