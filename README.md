@@ -49,7 +49,7 @@ python train.py
 ```
 
 ### Pretrained model
-Pretrained models and their configs required to load/train them can be downloaded from here:
+Pretrained models and their configs required to load/train them can be downloaded from here (updated with correct models 09-09-2024):
 ````
 https://www.icloud.com/iclouddrive/041FdACyj8m0pM4L383luzZJg#tiim_checkpoints
 ````
